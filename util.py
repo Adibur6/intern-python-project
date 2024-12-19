@@ -42,5 +42,49 @@ class NetworkRequest:
     def delete(url, headers = {}):
         return NetworkRequest._create_request(url,'DELETE',headers=headers)
         
+class TwitterRequestHandler:
+    base_url = 'https://localhost:8000/api'
 
-print(NetworkRequest.get('http://localhost:8000/api/uses/1'))
+    @classmethod
+    def _get_url(cls, endpoint):
+        return f"{cls.base_url}{endpoint}"
+
+    @classmethod
+    def list_users(cls):
+        return NetworkRequest.get(cls._get_url('/users'))
+
+    @classmethod
+    def create_user(cls, data):
+        return NetworkRequest.post(cls._get_url('/users'), data)
+
+    @classmethod
+    def get_user(cls, user_id):
+        return NetworkRequest.get(cls._get_url(f'/users/{user_id}'))
+
+    @classmethod
+    def login(cls, data):
+        return NetworkRequest.post(cls._get_url('/auth'), data)
+
+    @classmethod
+    def token_gen(cls, data):
+        return NetworkRequest.post(cls._get_url('/auth/token'), data)
+
+    @classmethod
+    def list_tweets(cls):
+        return NetworkRequest.get(cls._get_url('/tweets'))
+
+    @classmethod
+    def create_tweet(cls, data):
+        return NetworkRequest.post(cls._get_url('/tweets'), data)
+
+    @classmethod
+    def get_tweet(cls, tweet_id):
+        return NetworkRequest.get(cls._get_url(f'/tweets/{tweet_id}'))
+
+    @classmethod
+    def update_tweet(cls, tweet_id, data):
+        return NetworkRequest.put(cls._get_url(f'/tweets/{tweet_id}'), data)
+
+    @classmethod
+    def delete_tweet(cls, tweet_id):
+        return NetworkRequest.delete(cls._get_url(f'/tweets/{tweet_id}'))
