@@ -172,28 +172,3 @@ class Twitter:
     def delete_tweet(self, tweet_id):
         return TwitterRequestHandler.delete_tweet(tweet_id, headers={'Authorization': f'Bearer {self.auth.access_token}'})    
 
-response = TwitterRequestHandler.create_user({
-    'username': 'adib',
-    'password': '1234',
-    'firstname': 'Adib',
-    'lastname': 'Firman'
-})
-print(response)
-
-print(TwitterRequestHandler.list_users())
-
-twitter = Twitter('adib', '1234')
-jokes = {joke['text'] for joke in twitter.list_tweets()['body']}
-print()
-i=0
-while i < 10:
-    joke = f'Joke {i}'
-    if joke not in jokes:
-        print(twitter.create_tweet({'text': joke}))
-        jokes.add(joke)
-    else:
-        print('Joke already exists')
-    i += 1
-
-    
-print(twitter.list_tweets())
