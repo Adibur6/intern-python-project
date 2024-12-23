@@ -2,7 +2,15 @@ import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
-
+def logging_time(func):
+    def inner(*args, **kwargs):
+        import time
+        start = time.time()
+        returnValue = func(*args, **kwargs)
+        end = time.time()
+        print(f'Function {func.__name__} took {end-start} seconds')
+        return returnValue
+    return inner
 class NetworkRequest:
     @staticmethod
     def _create_request(url, method, data=None, headers={}):
@@ -20,9 +28,6 @@ class NetworkRequest:
                 body = res.read().decode('utf-8')
                 result['body'] = json.loads(body)
                 result['code'] = res.status
-        except HTTPError as e:
-            result['body'] = json.loads(e.read().decode('utf-8'))
-            result['code'] = e.code
         except Exception as e:
             result['body'] = str(e)
             result['code'] = 500
@@ -50,42 +55,52 @@ class TwitterRequestHandler:
         return f"{cls.base_url}{endpoint}"
 
     @classmethod
+    @logging_time
     def list_users(cls, headers={}):
         return NetworkRequest.get(cls._get_url('/users'), headers=headers)
 
     @classmethod
+    @logging_time
     def create_user(cls, data, headers={}):
         return NetworkRequest.post(cls._get_url('/users'), data, headers=headers)
 
     @classmethod
+    @logging_time
     def get_user(cls, user_id, headers={}):
         return NetworkRequest.get(cls._get_url(f'/users/{user_id}'), headers=headers)
 
     @classmethod
+    @logging_time
     def login(cls, data, headers={}):
         return NetworkRequest.post(cls._get_url('/auth'), data, headers=headers)
 
     @classmethod
+    @logging_time
     def token_gen(cls, data, headers={}):
         return NetworkRequest.post(cls._get_url('/auth/token'), data, headers=headers)
 
     @classmethod
-    def list_tweets(cls, headers={}):
-        return NetworkRequest.get(cls._get_url('/tweets'), headers=headers)
+    @logging_time
+    def list_tweets(cls,skip=0,limit=10, headers={}):
+        return NetworkRequest.get(cls._get_url(f'/tweets?skip={skip}&limit={limit}'), headers=headers)
 
     @classmethod
+    @logging_time
     def create_tweet(cls, data, headers={}):
         return NetworkRequest.post(cls._get_url('/tweets'), data, headers=headers)
 
     @classmethod
+    @logging_time
     def get_tweet(cls, tweet_id, headers={}):
         return NetworkRequest.get(cls._get_url(f'/tweets/{tweet_id}'), headers=headers)
 
     @classmethod
+    @logging_time
     def update_tweet(cls, tweet_id, data, headers={}):
         return NetworkRequest.put(cls._get_url(f'/tweets/{tweet_id}'), data, headers=headers)
 
     @classmethod
+    @logging_time
     def delete_tweet(cls, tweet_id, headers={}):
         return NetworkRequest.delete(cls._get_url(f'/tweets/{tweet_id}'), headers=headers)
 
@@ -123,13 +138,23 @@ def retry_mechanism(func):
         return returnValue
     return inner
 
+def logging_time(func):
+    def inner(*args, **kwargs):
+        import time
+        start = time.time()
+        returnValue = func(*args, **kwargs)
+        end = time.time()
+        print(f'Function {func.__name__} took {end-start} seconds')
+        return returnValue
+    return inner
+
 class Twitter:
     def __init__(self, username=None, password=None):
         self.auth = Auth(username, password)
-
+    
     @retry_mechanism
-    def list_tweets(self):
-        return TwitterRequestHandler.list_tweets(headers={'Authorization': f'Bearer {self.auth.access_token}'})
+    def list_tweets(self,skip=0,limit=100000000):
+        return TwitterRequestHandler.list_tweets(skip,limit,headers={'Authorization': f'Bearer {self.auth.access_token}'})
 
     @retry_mechanism
     def create_tweet(self, data):
@@ -147,10 +172,28 @@ class Twitter:
     def delete_tweet(self, tweet_id):
         return TwitterRequestHandler.delete_tweet(tweet_id, headers={'Authorization': f'Bearer {self.auth.access_token}'})    
 
-
+response = TwitterRequestHandler.create_user({
+    'username': 'adib',
+    'password': '1234',
+    'firstname': 'Adib',
+    'lastname': 'Firman'
+})
+print(response)
 
 print(TwitterRequestHandler.list_users())
 
 twitter = Twitter('adib', '1234')
+jokes = {joke['text'] for joke in twitter.list_tweets()['body']}
+print()
+i=0
+while i < 10:
+    joke = f'Joke {i}'
+    if joke not in jokes:
+        print(twitter.create_tweet({'text': joke}))
+        jokes.add(joke)
+    else:
+        print('Joke already exists')
+    i += 1
 
-print(twitter.auth)
+    
+print(twitter.list_tweets())
