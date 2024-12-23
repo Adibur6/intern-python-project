@@ -5,15 +5,14 @@ from urllib.error import HTTPError
 
 class NetworkRequest:
     @staticmethod
-    def _create_request(url,method,data = None,headers = {}):
+    def _create_request(url, method, data=None, headers={}):
         if data:
             data = json.dumps(data).encode('utf-8')
-        req = Request(url=url, method=method,data=data)
+        req = Request(url=url, method=method,data=data, headers=headers)
         if data:
             req.add_header('Content-Type', 'application/json')
         req.add_header('Accept', 'application/json')
-        for key, value in headers.items():
-            req.add_header(key, value)
+        
         
         result = {}
         try:
@@ -42,8 +41,9 @@ class NetworkRequest:
     def delete(url, headers = {}):
         return NetworkRequest._create_request(url,'DELETE',headers=headers)
         
+
 class TwitterRequestHandler:
-    base_url = 'https://localhost:8000/api'
+    base_url = 'http://localhost:8000/api'
 
     @classmethod
     def _get_url(cls, endpoint):
@@ -88,3 +88,27 @@ class TwitterRequestHandler:
     @classmethod
     def delete_tweet(cls, tweet_id):
         return NetworkRequest.delete(cls._get_url(f'/tweets/{tweet_id}'))
+
+class Auth:
+    def __init__(self, username=None, password=None):
+        self.login(username, password)
+
+    def login(self, username, password):
+        try:
+            body = TwitterRequestHandler.login({'username': username, 'password': password})['body']
+            self.refresh_token = body['refresh_token']
+            self.access_token = body['access_token']
+        except:
+            self.refresh_token = None
+            self.access_token = None
+            print('Error: Could not login')
+    def change_access_token(self):
+        try:
+            body = TwitterRequestHandler.token_gen({'refresh_token': self.refresh_token})['body']
+            self.access_token = body['access_token']
+            self.refresh_token = body['refresh_token']
+        except:
+            self.access_token = None
+            print('Error: Could not generate access token')
+
+    
