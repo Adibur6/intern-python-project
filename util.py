@@ -30,7 +30,7 @@ class NetworkRequest:
                 result['code'] = res.status
         except Exception as e:
             result['body'] = str(e)
-            result['code'] = 500
+            result['code'] = e.code
         return result
         
     @staticmethod
@@ -81,7 +81,7 @@ class TwitterRequestHandler:
 
     @classmethod
     @logging_time
-    def list_tweets(cls,skip=0,limit=10, headers={}):
+    def list_tweets(cls,skip=0,limit=1000000, headers={}):
         return NetworkRequest.get(cls._get_url(f'/tweets?skip={skip}&limit={limit}'), headers=headers)
 
     @classmethod
@@ -172,3 +172,15 @@ class Twitter:
     def delete_tweet(self, tweet_id):
         return TwitterRequestHandler.delete_tweet(tweet_id, headers={'Authorization': f'Bearer {self.auth.access_token}'})    
 
+class unique_checker:
+    def __init__(self,items):
+        
+        self.unique = {item for item in items}
+    def __enter__(self):
+        return self
+    def check(self, item):
+        return item not in self.unique
+    def add(self, item):
+        self.unique.add(item)
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.unique = set()
