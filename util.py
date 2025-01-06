@@ -5,14 +5,15 @@ from typing import Set, Any
 import time
 from functools import wraps
 def logging_time(func):
+    @wraps(func)
     def inner(*args, **kwargs):
-        import time
-        start = time.time()
+        start = time.perf_counter()
         returnValue = func(*args, **kwargs)
-        end = time.time()
+        end = time.perf_counter()
         print(f'Function {func.__name__} took {end-start} seconds')
         return returnValue
     return inner
+
 class NetworkRequest:
     @staticmethod
     def _create_request(url, method, data=None, headers={}):
@@ -135,20 +136,12 @@ def retry_mechanism(func):
     def inner(self,*args, **kwargs):
         returnValue = func(self,*args, **kwargs)
         if returnValue['code'] == 401:
+            print('Token expired, changing access token')
             self.auth.change_access_token()
             return func(self,*args, **kwargs)
         return returnValue
     return inner
 
-def logging_time(func):
-    @wraps(func)
-    def inner(*args, **kwargs):
-        start = time.perf_counter()
-        returnValue = func(*args, **kwargs)
-        end = time.perf_counter()
-        print(f'Function {func.__name__} took {end-start} seconds')
-        return returnValue
-    return inner
 
 class Twitter:
     def __init__(self, username=None, password=None):
