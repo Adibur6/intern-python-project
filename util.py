@@ -2,6 +2,8 @@ import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from typing import Set, Any
+import time
+from functools import wraps
 def logging_time(func):
     def inner(*args, **kwargs):
         import time
@@ -139,11 +141,11 @@ def retry_mechanism(func):
     return inner
 
 def logging_time(func):
+    @wraps(func)
     def inner(*args, **kwargs):
-        import time
-        start = time.time()
+        start = time.perf_counter()
         returnValue = func(*args, **kwargs)
-        end = time.time()
+        end = time.perf_counter()
         print(f'Function {func.__name__} took {end-start} seconds')
         return returnValue
     return inner
