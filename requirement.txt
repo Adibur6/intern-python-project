@@ -1,5 +1,11 @@
-Package    Version
----------- -------
-pip        21.1.1
-pyjokes    0.6.0
-setuptools 56.0.0
+certifi==2024.12.14
+charset-normalizer==3.4.1
+exceptiongroup==1.2.2
+idna==3.10
+iniconfig==2.0.0
+packaging==24.2
+pluggy==1.5.0
+pyjokes==0.6.0
+pytest==8.3.4
+tomli==2.2.1
+urllib3==2.2.3

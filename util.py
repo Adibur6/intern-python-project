@@ -4,15 +4,6 @@ from urllib.error import HTTPError
 from typing import Set, Any
 import time
 from functools import wraps
-def logging_time(func):
-    @wraps(func)
-    def inner(*args, **kwargs):
-        start = time.perf_counter()
-        returnValue = func(*args, **kwargs)
-        end = time.perf_counter()
-        print(f'Function {func.__name__} took {end-start} seconds')
-        return returnValue
-    return inner
 
 class NetworkRequest:
     @staticmethod
@@ -49,6 +40,17 @@ class NetworkRequest:
     def delete(url, headers = {}):
         return NetworkRequest._create_request(url,'DELETE',headers=headers)
         
+
+def logging_time(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        start = time.perf_counter()
+        returnValue = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f'Function {func.__name__} took {end-start} seconds')
+        return returnValue
+    return inner
+
 
 class TwitterRequestHandler:
     base_url = 'http://localhost:8000/api'
