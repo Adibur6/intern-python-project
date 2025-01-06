@@ -1,7 +1,7 @@
 import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-
+from typing import Set, Any
 def logging_time(func):
     def inner(*args, **kwargs):
         import time
@@ -173,14 +173,14 @@ class Twitter:
         return TwitterRequestHandler.delete_tweet(tweet_id, headers={'Authorization': f'Bearer {self.auth.access_token}'})    
 
 class unique_checker:
-    def __init__(self,items):
+    def __init__(self,items: Set[Any]):
         
-        self.unique = {item for item in items}
-    def __enter__(self):
+        self.unique = set(items)
+    def __enter__(self) -> 'unique_checker':
         return self
-    def check(self, item):
+    def check(self, item:Any) -> bool:
         return item not in self.unique
-    def add(self, item):
+    def add(self, item:Any) -> None:
         self.unique.add(item)
     def __exit__(self, exc_type, exc_value, traceback):
-        self.unique = set()
+        self.unique.clear()
